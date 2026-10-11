@@ -102,20 +102,27 @@ export default function selfCompact(omp: ExtensionAPI) {
     refresh(ctx);
   }
 
-  omp.on("turn_end", (_e, ctx) => {
+  // Peringatan langsung tiap prompt user: dijamin sampai ke model karena
+  // dikembalikan sebagai message pada event yang sama, bukan antrean nextTurn.
+  omp.on("before_agent_start", (event, ctx) => {
     if (ctx.agent.kind !== "main") return;
     const c = cfg(ctx);
     if (!c.enabled) return;
     const snap = snapshot(ctx);
-    if (!snap) return;
-    const key = `${snap.phase}:${Math.floor(snap.usage.percent)}`;
-    if (snap.phase === "notice" && !announced.has(key)) {
+    refresh(ctx);
+    if (!snap || snap.phase === "ok" || snap.phase === "forced") return;
+    if (snap.phase === "notice") {
+      const key = `notice:${Math.floor(snap.usage.percent)}`;
+      if (announced.has(key)) return;
       announced.add(key);
-      omp.sendMessage({ customType: "self-compact-notice", data: { text: guidance(ctx, "soft") }, display: false }, { deliverAs: "nextTurn" });
-    } else if (snap.phase === "warning" && !announced.has(key)) {
-      announced.add(key);
-      omp.sendMessage({ customType: "self-compact-warning", data: { text: guidance(ctx, "warning") }, display: false }, { deliverAs: "nextTurn" });
+      return { message: { customType: "self-compact-notice", data: { text: guidance(ctx, "soft") }, display: false } };
     }
+    // warning: ingatkan tiap prompt, tanpa dedup — sifatnya mendesak.
+    return { message: { customType: "self-compact-warning", data: { text: guidance(ctx, "warning") }, display: false } };
+  });
+
+  omp.on("turn_end", (_e, ctx) => {
+    if (ctx.agent.kind !== "main") return;
     refresh(ctx);
   });
 
