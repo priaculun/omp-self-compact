@@ -32,12 +32,13 @@ Lokal sekali jalan:
 omp --extension "$PWD"
 ```
 
-Aktifkan per session (default **off**):
+Extension **aktif otomatis** setiap session dimuat (default `enabled: true`). Cek status:
 
 ```text
-/self-compact-on
 /self-compact-info
 ```
+
+Matikan sementara bila perlu: `/self-compact-off`.
 
 ## Konfigurasi
 

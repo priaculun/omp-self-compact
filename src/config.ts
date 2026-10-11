@@ -9,7 +9,7 @@ export interface Config {
   buffer: number;
   hardCap: number;
 }
-export const DEFAULTS: Config = { enabled: false, softAt: 0.10, warnAt: 0.15, buffer: 0.10, hardCap: 0.90 };
+export const DEFAULTS: Config = { enabled: true, softAt: 0.10, warnAt: 0.15, buffer: 0.10, hardCap: 0.90 };
 
 export function parseThreshold(value: ThresholdInput, window: number): number {
   if (typeof value === "number") return value >= 1 ? value / window : value;
